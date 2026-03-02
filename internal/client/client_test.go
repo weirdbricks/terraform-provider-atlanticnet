@@ -6,7 +6,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/user/terraform-provider-atlanticnet/internal/client"
+	"github.com/weirdbricks/terraform-provider-atlanticnet/internal/client"
 )
 
 // newMockServer creates a test HTTP server that returns the given JSON payload.
@@ -223,7 +223,7 @@ func TestDeleteSSHKey(t *testing.T) {
 func TestCreateDNSZone(t *testing.T) {
 	srv, c := newMockServer(t, func(w http.ResponseWriter, r *http.Request) {
 		respond(w, map[string]interface{}{
-			"dns-create-zoneresponse": map[string]interface{}{
+			"DNS-create-zoneresponse": map[string]interface{}{
 				"zone_id": "zone-001",
 			},
 		})
@@ -245,7 +245,7 @@ func TestCreateDNSZone(t *testing.T) {
 func TestListDNSZones(t *testing.T) {
 	srv, c := newMockServer(t, func(w http.ResponseWriter, r *http.Request) {
 		respond(w, map[string]interface{}{
-			"dns-list-zonesresponse": map[string]interface{}{
+			"DNS-list-zonesresponse": map[string]interface{}{
 				"zones": map[string]interface{}{
 					"1item": map[string]interface{}{
 						"zone_id":   "zone-001",
@@ -271,7 +271,7 @@ func TestListDNSZones(t *testing.T) {
 func TestCreateDNSRecord(t *testing.T) {
 	srv, c := newMockServer(t, func(w http.ResponseWriter, r *http.Request) {
 		respond(w, map[string]interface{}{
-			"dns-create-zone-recordresponse": map[string]interface{}{
+			"DNS-create-zone-recordresponse": map[string]interface{}{
 				"record_id": "rec-001",
 			},
 		})
@@ -296,7 +296,7 @@ func TestCreateDNSRecord(t *testing.T) {
 func TestGetDNSRecordNotFound(t *testing.T) {
 	srv, c := newMockServer(t, func(w http.ResponseWriter, r *http.Request) {
 		respond(w, map[string]interface{}{
-			"dns-list-zone-recordsresponse": map[string]interface{}{
+			"DNS-list-zone-recordsresponse": map[string]interface{}{
 				"records": map[string]interface{}{},
 			},
 		})
