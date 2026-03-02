@@ -424,11 +424,11 @@ type DNSZone struct {
 
 // ListDNSZones returns all DNS zones on the account.
 func (c *Client) ListDNSZones() ([]DNSZone, error) {
-	resp, err := c.do("list-dns-zones", nil)
+	resp, err := c.do("DNS-list-zones", nil)
 	if err != nil {
 		return nil, fmt.Errorf("list-dns-zones failed: %w", err)
 	}
-	zresp, ok := resp["dns-list-zonesresponse"].(map[string]interface{})
+	zresp, ok := resp["DNS-list-zonesresponse"].(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("unexpected response from list-dns-zones")
 	}
@@ -463,11 +463,11 @@ func (c *Client) GetDNSZone(id string) (*DNSZone, error) {
 
 // CreateDNSZone creates a new DNS zone.
 func (c *Client) CreateDNSZone(name string) (*DNSZone, error) {
-	resp, err := c.do("create-dns-zone", map[string]string{"zone_name": name})
+	resp, err := c.do("DNS-create-zone", map[string]string{"zone_name": name})
 	if err != nil {
 		return nil, fmt.Errorf("create-dns-zone failed: %w", err)
 	}
-	cresp, ok := resp["dns-create-zoneresponse"].(map[string]interface{})
+	cresp, ok := resp["DNS-create-zoneresponse"].(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("unexpected response from create-dns-zone")
 	}
@@ -479,7 +479,7 @@ func (c *Client) CreateDNSZone(name string) (*DNSZone, error) {
 
 // DeleteDNSZone removes a DNS zone and all its records.
 func (c *Client) DeleteDNSZone(id string) error {
-	_, err := c.do("delete-dns-zone", map[string]string{"zone_id": id})
+	_, err := c.do("DNS-delete-zone", map[string]string{"zone_id": id})
 	if err != nil {
 		return fmt.Errorf("delete-dns-zone failed: %w", err)
 	}
@@ -501,11 +501,11 @@ type DNSRecord struct {
 
 // ListDNSRecords returns all records within a zone.
 func (c *Client) ListDNSRecords(zoneID string) ([]DNSRecord, error) {
-	resp, err := c.do("list-dns-zone-records", map[string]string{"zone_id": zoneID})
+	resp, err := c.do("DNS-list-zone-records", map[string]string{"zone_id": zoneID})
 	if err != nil {
 		return nil, fmt.Errorf("list-dns-zone-records failed: %w", err)
 	}
-	rresp, ok := resp["dns-list-zone-recordsresponse"].(map[string]interface{})
+	rresp, ok := resp["DNS-list-zone-recordsresponse"].(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("unexpected response from list-dns-zone-records")
 	}
@@ -565,11 +565,11 @@ func (c *Client) CreateDNSRecord(in CreateDNSRecordInput) (*DNSRecord, error) {
 	if in.Priority != "" {
 		params["priority"] = in.Priority
 	}
-	resp, err := c.do("create-dns-zone-record", params)
+	resp, err := c.do("DNS-create-zone-record", params)
 	if err != nil {
 		return nil, fmt.Errorf("create-dns-zone-record failed: %w", err)
 	}
-	cresp, ok := resp["dns-create-zone-recordresponse"].(map[string]interface{})
+	cresp, ok := resp["DNS-create-zone-recordresponse"].(map[string]interface{})
 	if !ok {
 		return nil, fmt.Errorf("unexpected response from create-dns-zone-record")
 	}
@@ -597,7 +597,7 @@ func (c *Client) UpdateDNSRecord(in CreateDNSRecordInput, recordID string) (*DNS
 	if in.Priority != "" {
 		params["priority"] = in.Priority
 	}
-	_, err := c.do("update-dns-zone-record", params)
+	_, err := c.do("DNS-update-zone-record", params)
 	if err != nil {
 		return nil, fmt.Errorf("update-dns-zone-record failed: %w", err)
 	}
@@ -606,7 +606,7 @@ func (c *Client) UpdateDNSRecord(in CreateDNSRecordInput, recordID string) (*DNS
 
 // DeleteDNSRecord removes a DNS record from a zone.
 func (c *Client) DeleteDNSRecord(zoneID, recordID string) error {
-	_, err := c.do("delete-dns-zone-record", map[string]string{
+	_, err := c.do("DNS-delete-zone-record", map[string]string{
 		"zone_id":   zoneID,
 		"record_id": recordID,
 	})
