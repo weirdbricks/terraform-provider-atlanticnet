@@ -1,0 +1,32 @@
+# Provider binary
+terraform-provider-atlanticnet
+terraform-provider-atlanticnet_v*
+
+# Terraform working files
+**/.terraform/
+**/.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
+*.tfplan
+
+# GoReleaser output
+dist/
+
+# Go build artifacts
+*.exe
+*.test
+*.out
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# macOS
+.DS_Store
+
+# Never commit credentials
+*.key
+anc-access.key
+anc-private.key
