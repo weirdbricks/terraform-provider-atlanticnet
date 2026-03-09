@@ -110,6 +110,7 @@ func (p *AtlanticNetProvider) DataSources(_ context.Context) []func() datasource
 	return []func() datasource.DataSource{
 		NewLocationsDataSource,
 		NewPlansDataSource,
+		NewImagesDataSource,
 	}
 }
 

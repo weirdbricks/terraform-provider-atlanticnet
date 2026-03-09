@@ -211,6 +211,47 @@ func (c *Client) ListPlans() ([]Plan, error) {
 	return out, nil
 }
 
+// ─── Images ──────────────────────────────────────────────────────────────────
+
+// Image represents an available Atlantic.Net OS image.
+type Image struct {
+	ID          string
+	DisplayName string
+	OSType      string
+	OSFamily    string
+	Architecture string
+	Version     string
+}
+
+// ListImages returns all available OS images.
+func (c *Client) ListImages() ([]Image, error) {
+	resp, err := c.do("describe-image", nil)
+	if err != nil {
+		return nil, err
+	}
+	iresp, ok := resp["describe-imageresponse"].(map[string]interface{})
+	if !ok {
+		return nil, fmt.Errorf("unexpected response structure from describe-image")
+	}
+	imagesSet, _ := iresp["imagesset"].(map[string]interface{})
+	var out []Image
+	for _, v := range imagesSet {
+		item, ok := v.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		out = append(out, Image{
+			ID:           str(item, "imageid"),
+			DisplayName:  str(item, "displayname"),
+			OSType:       str(item, "ostype"),
+			OSFamily:     str(item, "os_family"),
+			Architecture: str(item, "architecture"),
+			Version:      str(item, "version"),
+		})
+	}
+	return out, nil
+}
+
 // ─── Cloud Servers ───────────────────────────────────────────────────────────
 
 // Instance represents an Atlantic.Net Cloud Server.
@@ -422,8 +463,8 @@ func (c *Client) GetSSHKey(id string) (*SSHKey, error) {
 // AddSSHKey uploads a new SSH key to the account.
 func (c *Client) AddSSHKey(name, publicKey string) (*SSHKey, error) {
 	resp, err := c.do("add-sshkey", map[string]string{
-		"key_name": name,
-		"key":      publicKey,
+		"key_name":   name,
+		"public_key": publicKey,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("add-sshkey failed: %w", err)
