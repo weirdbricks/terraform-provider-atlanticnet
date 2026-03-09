@@ -10,8 +10,8 @@ A production-quality Terraform provider for [Atlantic.Net Cloud](https://www.atl
 
 | Resource | Create | Read | Update | Delete | Import | Manually Tested |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
-| `atlanticnet_server` | ✅ | ✅ | ✅ (resize) | ✅ | ✅ | ✅ |
-| `atlanticnet_ssh_key` | ✅ | ✅ | — | ✅ | — | ✅ |
+| `atlanticnet_server` | ✅ | ✅ | ✅ (resize) | ✅ | ✅ | ✅ (full CRUD) |
+| `atlanticnet_ssh_key` | ✅ | ✅ | — | ✅ | — | ✅ (create/delete) |
 | `atlanticnet_dns_zone` | ✅ | ✅ | — | ✅ | — |  |
 | `atlanticnet_dns_record` | ✅ | ✅ | ✅ | ✅ | — |  |
 | `atlanticnet_block_volume` | ✅ | ✅ | ✅ (attach/detach) | ✅ | — |  |
