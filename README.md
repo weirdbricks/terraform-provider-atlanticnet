@@ -211,8 +211,14 @@ make testacc-servers
 To add support for more Atlantic.Net resources:
 
 1. Add client methods to `internal/client/client.go` (see existing `RunInstance`, `GetInstance`, etc. for patterns)
-2. Add unit tests to `internal/client/client_test.go` (see existing tests for mocking patterns)
+2. **Add unit tests to `internal/client/client_test.go`** — Uses mock HTTP server for testing without API keys (see existing tests for mocking patterns)
 3. Create `internal/provider/resource_<name>.go` (see `resource_server.go` for a complete example with CRUD operations)
-4. Add acceptance tests to `internal/provider/provider_test.go` (see existing server tests)
+4. **Add acceptance tests to `internal/provider/provider_test.go`** — Tests against real Atlantic.Net API (requires credentials)
 5. Register the resource in `internal/provider/provider.go`
-6. Add an example in `examples/resources/atlanticnet_<name>/resource.tf` (optional but recommended)
+6. **Add an example in `examples/resources/atlanticnet_<name>/resource.tf`** — See `examples/provider/main.tf` for provider example
+
+Run tests locally:
+```bash
+make test          # Unit tests only
+make testacc       # Acceptance tests
+```
