@@ -23,10 +23,6 @@ A production-quality Terraform provider for [Atlantic.Net Cloud](https://www.atl
 | `atlanticnet_locations` | Lists all available datacenters |
 | `atlanticnet_plans` | Lists all server plans with pricing |
 
-## ⚠️ Firewall Note
-
-Atlantic.Net's firewall rules are managed through the **web control panel only** — they are not exposed via the public API and therefore cannot be managed with this provider. Please configure firewall rules through [cloud.atlantic.net](https://cloud.atlantic.net).
-
 ## Requirements
 
 - [Terraform](https://developer.hashicorp.com/terraform/downloads) >= 1.0
