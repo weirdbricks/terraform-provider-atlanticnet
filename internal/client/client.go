@@ -122,6 +122,14 @@ func (c *Client) do(action string, extra map[string]string) (map[string]interfac
 // str safely extracts a string from an interface{} map.
 func str(m map[string]interface{}, key string) string {
 	if v, ok := m[key]; ok && v != nil {
+		// Handle numeric values (JSON unmarshals numbers as float64)
+		if f, ok := v.(float64); ok {
+			// Check if it's an integer value
+			if f == float64(int64(f)) {
+				return fmt.Sprintf("%d", int64(f))
+			}
+			return fmt.Sprintf("%v", f)
+		}
 		return fmt.Sprintf("%v", v)
 	}
 	return ""
@@ -231,7 +239,7 @@ type RunInstanceInput struct {
 	Term         string
 }
 
-// RunInstance provisions a new Cloud Server and waits for it to reach RUNNING.
+// RunInstance provisions a new Cloud Server and waits for it to reach RUNNING or PROVISIONED.
 func (c *Client) RunInstance(in RunInstanceInput) (*Instance, error) {
 	backup := "N"
 	if in.EnableBackup {
@@ -320,27 +328,23 @@ func (c *Client) waitForInstance(id, want string, timeout time.Duration) (*Insta
 		if err != nil {
 			return nil, err
 		}
-		// Compare status case-insensitively
-		statusUpper := strings.ToUpper(inst.Status)
-		wantUpper := strings.ToUpper(want)
-		switch statusUpper {
-		case wantUpper:
+		// Accept PROVISIONED or RUNNING status as success
+		if inst.Status == "PROVISIONED" || inst.Status == "RUNNING" {
 			return inst, nil
-		case "FAILED", "REMOVED", "ERROR":
-			return nil, fmt.Errorf("instance %s entered terminal status %q while waiting for %q", id, inst.Status, want)
 		}
-		// Log progress every 5 polls (75 seconds)
-		if time.Now().Unix()%5 == 0 {
-			fmt.Fprintf(os.Stderr, "[debug] Instance %s status: %s (waiting for %s)\n", id, inst.Status, want)
+		// Check for terminal states
+		switch inst.Status {
+		case "FAILED", "REMOVED", "ERROR":
+			return nil, fmt.Errorf("instance %s entered terminal status %q", id, inst.Status)
 		}
 		time.Sleep(15 * time.Second)
 	}
-	return nil, fmt.Errorf("timed out after %s waiting for instance %s to reach %q", timeout, id, want)
+	return nil, fmt.Errorf("timed out after %s waiting for instance %s", timeout, id)
 }
 
 func parseInstance(item map[string]interface{}) *Instance {
 	return &Instance{
-		ID:          str(item, "InstanceId"),
+		ID:          str(item, "instanceid"),
 		Name:        str(item, "vm_description"),
 		IPAddress:   str(item, "vm_ip_address"),
 		PlanName:    str(item, "vm_plan_name"),
