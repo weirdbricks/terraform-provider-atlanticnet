@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework/path"
+
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -57,7 +59,6 @@ func (r *ServerResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"id": schema.StringAttribute{
 				Computed:            true,
 				MarkdownDescription: "Unique numeric ID of the Cloud Server.",
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
 			},
 			"name": schema.StringAttribute{
 				Required:            true,
@@ -152,8 +153,18 @@ func (r *ServerResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	// Store the ID for later use in Read
+	createdID := inst.ID
+
 	instanceToModel(inst, &plan)
+
+	// For Create, explicitly set the ID in the state since Terraform needs it
+	plan.ID = types.StringValue(createdID)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+	// After setting state, explicitly set the ID attribute using SetAttribute
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), createdID)...)
 }
 
 func (r *ServerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -210,8 +221,15 @@ func (r *ServerResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	tflog.Info(ctx, "Terminating Cloud Server", map[string]interface{}{"id": state.ID.ValueString()})
-	if err := r.client.TerminateInstance(state.ID.ValueString()); err != nil {
+	idValue := state.ID.ValueString()
+	if idValue == "" {
+		resp.Diagnostics.AddError("Delete failed", "Instance ID is empty in state")
+		return
+	}
+
+	tflog.Info(ctx, "Terminating Cloud Server", map[string]interface{}{"id": idValue})
+
+	if err := r.client.TerminateInstance(idValue); err != nil {
 		resp.Diagnostics.AddError("Failed to terminate Cloud Server", err.Error())
 		return
 	}
@@ -233,7 +251,10 @@ func (r *ServerResource) ImportState(ctx context.Context, req resource.ImportSta
 
 // instanceToModel maps an API Instance to Terraform state.
 func instanceToModel(inst *client.Instance, m *serverModel) {
-	m.ID = types.StringValue(inst.ID)
+	// Only set ID if not already set (preserve ID from create)
+	if m.ID.IsNull() {
+		m.ID = types.StringValue(inst.ID)
+	}
 	m.Name = types.StringValue(inst.Name)
 	m.PlanName = types.StringValue(inst.PlanName)
 	m.ImageID = types.StringValue(inst.Image)
