@@ -20,8 +20,35 @@ A production-quality Terraform provider for [Atlantic.Net Cloud](https://www.atl
 
 | Data Source | Description |
 |---|---|
-| `atlanticnet_locations` | Lists all available datacenters |
-| `atlanticnet_plans` | Lists all server plans with pricing |
+| `atlanticnet_locations` | Lists all available datacenters with pricing |
+| `atlanticnet_plans` | Lists all server plans with CPU, RAM, disk, and pricing |
+
+## Available Regions
+
+Use the `atlanticnet_locations` data source to list all available regions. Common regions include:
+
+- `USEAST1` — USA East 1 (Secaucus, NJ)
+- `USEAST2` — USA East 2 (New York, NY)
+- `USWEST1` — USA West 1 (Los Angeles, CA)
+- `EUWEST1` — EU West 1 (London, UK)
+
+Query the API to see the current complete list:
+```hcl
+data "atlanticnet_locations" "all" {}
+
+output "locations" {
+  value = [for loc in data.atlanticnet_locations.all.locations : loc.code]
+}
+```
+
+## Supported Images
+
+Common Linux images:
+- `Ubuntu-22.04_64bit` — Ubuntu 22.04 LTS
+- `Debian-12_64bit` — Debian 12
+- `CentOS-9_64bit` — CentOS 9
+
+Other OS images are available (Windows Server, etc.). Use the API or web UI to see all available images for your location.
 
 ## Requirements
 
