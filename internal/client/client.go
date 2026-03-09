@@ -313,9 +313,15 @@ func (c *Client) ResizeInstance(id, planName string) (*Instance, error) {
 
 // TerminateInstance deletes a Cloud Server.
 func (c *Client) TerminateInstance(id string) error {
-	_, err := c.do("terminate-instance", map[string]string{"instanceid": id})
+	resp, err := c.do("delete-instance", map[string]string{"instanceid": id})
 	if err != nil {
-		return fmt.Errorf("terminate-instance failed: %w", err)
+		return fmt.Errorf("delete-instance failed: %w", err)
+	}
+	// Check if the API returned an error in the response body
+	if errObj, ok := resp["error"].(map[string]interface{}); ok {
+		if msg, ok := errObj["message"].(string); ok {
+			return fmt.Errorf("delete-instance API error: %s", msg)
+		}
 	}
 	return nil
 }

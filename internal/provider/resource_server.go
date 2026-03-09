@@ -213,7 +213,11 @@ func (r *ServerResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	tflog.Info(ctx, "Terminating Cloud Server", map[string]interface{}{"id": state.ID.ValueString()})
 	if err := r.client.TerminateInstance(state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Failed to terminate Cloud Server", err.Error())
+		return
 	}
+
+	// Remove the resource from state after successful termination
+	resp.State.RemoveResource(ctx)
 }
 
 func (r *ServerResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {

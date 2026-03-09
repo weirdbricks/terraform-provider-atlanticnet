@@ -28,7 +28,7 @@ provider "atlanticnet" {}
 resource "atlanticnet_server" "test" {
   name        = "terraform-test-${substr(timestamp(), 0, 10)}"
   plan_name   = "G2.1GB"
-  image_id    = "ubuntu-22.04_64bit"
+  image_id    = "Ubuntu-22.04_64bit"
   vm_location = "USEAST2"
   term        = "on-demand"
 
