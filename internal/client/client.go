@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -79,6 +80,11 @@ func (c *Client) do(action string, extra map[string]string) (map[string]interfac
 	}
 
 	reqURL := c.BaseURL + "?" + params.Encode()
+	// Debug: log the request (but mask credentials)
+	debugURL := strings.ReplaceAll(reqURL, c.AccessKey, "***")
+	debugURL = strings.ReplaceAll(debugURL, params.Get("Signature"), "***")
+	fmt.Fprintf(os.Stderr, "[DEBUG] API Request: %s\n", debugURL)
+
 	resp, err := c.HTTPClient.Get(reqURL)
 	if err != nil {
 		return nil, fmt.Errorf("HTTP request to Atlantic.Net API failed: %w", err)
@@ -94,6 +100,13 @@ func (c *Client) do(action string, extra map[string]string) (map[string]interfac
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, fmt.Errorf("failed to parse API response as JSON: %w (body: %s)", err, string(body))
 	}
+
+	// Debug: log the response (truncate if needed)
+	respBody := string(body)
+	if len(respBody) > 500 {
+		respBody = respBody[:500] + "..."
+	}
+	fmt.Fprintf(os.Stderr, "[DEBUG] API Response (%s): %s\n", action, respBody)
 
 	// Surface API-level errors
 	if errObj, ok := result["error"].(map[string]interface{}); ok {
@@ -230,7 +243,7 @@ func (c *Client) RunInstance(in RunInstanceInput) (*Instance, error) {
 	}
 	params := map[string]string{
 		"servername":   in.ServerName,
-		"image":        in.ImageID,
+		"imageid":      in.ImageID,
 		"planname":     in.PlanName,
 		"vm_location":  in.VMLocation,
 		"server_qty":   "1",
@@ -307,11 +320,18 @@ func (c *Client) waitForInstance(id, want string, timeout time.Duration) (*Insta
 		if err != nil {
 			return nil, err
 		}
-		switch inst.Status {
-		case want:
+		// Compare status case-insensitively
+		statusUpper := strings.ToUpper(inst.Status)
+		wantUpper := strings.ToUpper(want)
+		switch statusUpper {
+		case wantUpper:
 			return inst, nil
-		case "FAILED", "REMOVED":
+		case "FAILED", "REMOVED", "ERROR":
 			return nil, fmt.Errorf("instance %s entered terminal status %q while waiting for %q", id, inst.Status, want)
+		}
+		// Log progress every 5 polls (75 seconds)
+		if time.Now().Unix()%5 == 0 {
+			fmt.Fprintf(os.Stderr, "[debug] Instance %s status: %s (waiting for %s)\n", id, inst.Status, want)
 		}
 		time.Sleep(15 * time.Second)
 	}
