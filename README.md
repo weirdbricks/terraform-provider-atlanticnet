@@ -14,6 +14,8 @@ A production-quality Terraform provider for [Atlantic.Net Cloud](https://www.atl
 | `atlanticnet_dns_record` | ✅ | ✅ | ✅ | ✅ | — |
 | `atlanticnet_block_volume` | ✅ | ✅ | ✅ (attach/detach) | ✅ | — |
 
+**Status:** The provider is fully functional for managing Cloud Servers. All CRUD operations work correctly with proper status polling and instance lifecycle management.
+
 ## Supported Data Sources
 
 | Data Source | Description |
@@ -102,7 +104,7 @@ resource "atlanticnet_ssh_key" "deployer" {
 resource "atlanticnet_server" "web" {
   name        = "web-01"
   plan_name   = "G2.4GB"
-  image_id    = "ubuntu-22.04_64bit"
+  image_id    = "Ubuntu-22.04_64bit"
   vm_location = "USEAST2"
   ssh_key_id  = atlanticnet_ssh_key.deployer.id
 }
