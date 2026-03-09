@@ -230,7 +230,7 @@ func (c *Client) RunInstance(in RunInstanceInput) (*Instance, error) {
 	}
 	params := map[string]string{
 		"servername":   in.ServerName,
-		"imageid":      in.ImageID,
+		"image":        in.ImageID,
 		"planname":     in.PlanName,
 		"vm_location":  in.VMLocation,
 		"server_qty":   "1",

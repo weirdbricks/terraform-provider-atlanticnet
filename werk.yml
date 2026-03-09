@@ -1,0 +1,18 @@
+version: 1
+
+jobs:
+  test:
+    description: "Test Atlantic.Net provider with Terraform (data sources only)"
+    executor: local
+    dotenv:
+      - /home/lampros/git_work/dirless-infra/secrets.env
+    commands:
+      - ./scripts/test-provider.sh
+
+  test:instance:
+    description: "Create, verify, and destroy an Atlantic.Net test instance"
+    executor: local
+    dotenv:
+      - /home/lampros/git_work/dirless-infra/secrets.env
+    commands:
+      - ./scripts/test-create-instance.sh
