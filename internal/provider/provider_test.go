@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/user/terraform-provider-atlanticnet/internal/provider"
+	"github.com/weirdbricks/terraform-provider-atlanticnet/internal/provider"
 )
 
 // providerFactories maps the provider name to a factory for acceptance tests.

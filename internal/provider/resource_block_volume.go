@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/user/terraform-provider-atlanticnet/internal/client"
+	"github.com/weirdbricks/terraform-provider-atlanticnet/internal/client"
 	"strconv"
 )
 

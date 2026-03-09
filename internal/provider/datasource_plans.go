@@ -7,7 +7,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/user/terraform-provider-atlanticnet/internal/client"
+	"github.com/weirdbricks/terraform-provider-atlanticnet/internal/client"
 )
 
 var _ datasource.DataSource = &PlansDataSource{}

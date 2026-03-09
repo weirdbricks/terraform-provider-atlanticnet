@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/user/terraform-provider-atlanticnet/internal/client"
+	"github.com/weirdbricks/terraform-provider-atlanticnet/internal/client"
 )
 
 var _ provider.Provider = &AtlanticNetProvider{}
