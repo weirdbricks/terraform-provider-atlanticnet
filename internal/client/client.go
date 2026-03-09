@@ -328,6 +328,10 @@ func (c *Client) waitForInstance(id, want string, timeout time.Duration) (*Insta
 		if err != nil {
 			return nil, err
 		}
+		// Ensure ID is set (describe-instance response may not include it)
+		if inst.ID == "" {
+			inst.ID = id
+		}
 		// Accept PROVISIONED or RUNNING status as success
 		if inst.Status == "PROVISIONED" || inst.Status == "RUNNING" {
 			return inst, nil
