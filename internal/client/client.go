@@ -482,9 +482,27 @@ func (c *Client) AddSSHKey(name, publicKey string) (*SSHKey, error) {
 
 // DeleteSSHKey removes an SSH key from the account.
 func (c *Client) DeleteSSHKey(id string) error {
-	_, err := c.do("delete-sshkey", map[string]string{"key_id": id})
+	resp, err := c.do("delete-sshkey", map[string]string{"key_id": id})
 	if err != nil {
 		return fmt.Errorf("delete-sshkey failed: %w", err)
+	}
+	dresp, ok := resp["delete-sshkeyresponse"].(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("unexpected response from delete-sshkey")
+	}
+	delItem, _ := dresp["delete-sshkey"].(map[string]interface{})
+	item, _ := delItem["item"].(map[string]interface{})
+	if item == nil {
+		return fmt.Errorf("no item in delete-sshkey response")
+	}
+	result := str(item, "result")
+	if result != "true" {
+		message := str(item, "message")
+		code := str(item, "code")
+		if code != "" {
+			return fmt.Errorf("delete-sshkey failed (%s): %s", code, message)
+		}
+		return fmt.Errorf("delete-sshkey failed: %s", message)
 	}
 	return nil
 }
