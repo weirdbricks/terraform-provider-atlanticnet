@@ -135,6 +135,15 @@ func str(m map[string]interface{}, key string) string {
 	return ""
 }
 
+// getKeys returns the keys of a map (for debugging)
+func getKeys(m map[string]interface{}) []string {
+	var keys []string
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // ─── Locations ──────────────────────────────────────────────────────────────
 
 // Location represents an Atlantic.Net datacenter.
@@ -319,7 +328,7 @@ func (c *Client) RunInstance(in RunInstanceInput) (*Instance, error) {
 	}
 
 	instanceID := str(item, "instanceid")
-	return c.waitForInstance(instanceID, "RUNNING", 15*time.Minute)
+	return c.waitForInstance(instanceID, "RUNNING", 3*time.Minute)
 }
 
 // GetInstance returns details for a single Cloud Server.
@@ -349,7 +358,7 @@ func (c *Client) ResizeInstance(id, planName string) (*Instance, error) {
 	if err != nil {
 		return nil, fmt.Errorf("resize-instance failed: %w", err)
 	}
-	return c.waitForInstance(id, "RUNNING", 15*time.Minute)
+	return c.waitForInstance(id, "RUNNING", 3*time.Minute)
 }
 
 // TerminateInstance deletes a Cloud Server.
@@ -469,12 +478,40 @@ func (c *Client) AddSSHKey(name, publicKey string) (*SSHKey, error) {
 	if err != nil {
 		return nil, fmt.Errorf("add-sshkey failed: %w", err)
 	}
-	aresp, ok := resp["add-sshkeyresponse"].(map[string]interface{})
-	if !ok {
-		return nil, fmt.Errorf("unexpected response from add-sshkey")
+
+	// The API response can have two structures:
+	// 1. Top-level: { "requestid": "...", "result": { "key_id": "...", ... } }
+	// 2. Wrapped: { "add-sshkeyresponse": { "requestid": "...", "result": { "key_id": "...", ... } } }
+
+	var resultData map[string]interface{}
+
+	// Try structure 2 first: wrapped in add-sshkeyresponse
+	if wrapped, ok := resp["add-sshkeyresponse"].(map[string]interface{}); ok {
+		if result, ok := wrapped["result"].(map[string]interface{}); ok {
+			resultData = result
+		}
 	}
+
+	// Try structure 1: result at top level
+	if resultData == nil {
+		if result, ok := resp["result"].(map[string]interface{}); ok {
+			resultData = result
+		}
+	}
+
+	if resultData == nil {
+		respJSON, _ := json.MarshalIndent(resp, "", "  ")
+		return nil, fmt.Errorf("unexpected response from add-sshkey. Available keys: %v. Full response:\n%s", getKeys(resp), respJSON)
+	}
+
+	keyID := str(resultData, "key_id")
+	if keyID == "" {
+		respJSON, _ := json.MarshalIndent(resultData, "", "  ")
+		return nil, fmt.Errorf("add-sshkey succeeded but no key_id in result. Response:\n%s", respJSON)
+	}
+
 	return &SSHKey{
-		ID:        str(aresp, "key_id"),
+		ID:        keyID,
 		Name:      name,
 		PublicKey: publicKey,
 	}, nil
