@@ -11,12 +11,12 @@ A production-quality Terraform provider for [Atlantic.Net Cloud](https://www.atl
 | Resource | Create | Read | Update | Delete | Import | Manually Tested |
 |---|:---:|:---:|:---:|:---:|:---:|:---:|
 | `atlanticnet_server` | ✅ | ✅ | ✅ (resize) | ✅ | ✅ | ✅ (full CRUD) |
-| `atlanticnet_ssh_key` | ✅ | ✅ | — | ✅ | — | ✅ (create/delete) |
+| `atlanticnet_ssh_key` | ✅ | ✅ | — | ✅ | — | ✅ (full CRUD) |
 | `atlanticnet_dns_zone` | ✅ | ✅ | — | ✅ | — |  |
 | `atlanticnet_dns_record` | ✅ | ✅ | ✅ | ✅ | — |  |
 | `atlanticnet_block_volume` | ✅ | ✅ | ✅ (attach/detach) | ✅ | — |  |
 
-**Status:** The provider is fully functional for managing Cloud Servers. All CRUD operations work correctly with proper status polling and instance lifecycle management.
+**Status:** The provider is fully functional for managing Cloud Servers and SSH keys. All CRUD operations work correctly with proper status polling and instance lifecycle management. SSH key creation and deletion have been verified against the real Atlantic.Net API.
 
 ## Supported Data Sources
 
