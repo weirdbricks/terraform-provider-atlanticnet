@@ -441,16 +441,27 @@ func (c *Client) ListSSHKeys() ([]SSHKey, error) {
 	ks, _ := kresp["KeysSet"].(map[string]interface{})
 	var keys []SSHKey
 	for _, v := range ks {
-		item, ok := v.(map[string]interface{})
-		if !ok {
-			continue
+		if item, ok := v.(map[string]interface{}); ok {
+			// Single key: KeysSet.item is a map
+			keys = append(keys, SSHKey{
+				ID:          str(item, "key_id"),
+				Name:        str(item, "key_name"),
+				PublicKey:   str(item, "key"),
+				Fingerprint: str(item, "key_fingerprint"),
+			})
+		} else if items, ok := v.([]interface{}); ok {
+			// Multiple keys: KeysSet.item is an array
+			for _, iv := range items {
+				if item, ok := iv.(map[string]interface{}); ok {
+					keys = append(keys, SSHKey{
+						ID:          str(item, "key_id"),
+						Name:        str(item, "key_name"),
+						PublicKey:   str(item, "key"),
+						Fingerprint: str(item, "key_fingerprint"),
+					})
+				}
+			}
 		}
-		keys = append(keys, SSHKey{
-			ID:          str(item, "key_id"),
-			Name:        str(item, "key_name"),
-			PublicKey:   str(item, "key"),
-			Fingerprint: str(item, "key_fingerprint"),
-		})
 	}
 	return keys, nil
 }

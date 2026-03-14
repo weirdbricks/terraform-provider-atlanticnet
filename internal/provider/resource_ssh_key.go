@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -98,8 +99,12 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	key, err := r.client.GetSSHKey(state.ID.ValueString())
 	if err != nil {
-		// Key deleted outside Terraform
-		resp.State.RemoveResource(ctx)
+		if strings.Contains(err.Error(), "not found") {
+			// Key deleted outside Terraform
+			resp.State.RemoveResource(ctx)
+		} else {
+			resp.Diagnostics.AddError("Failed to read SSH key", err.Error())
+		}
 		return
 	}
 
