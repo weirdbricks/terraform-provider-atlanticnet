@@ -109,7 +109,7 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	state.Name = types.StringValue(key.Name)
-	state.PublicKey = types.StringValue(key.PublicKey)
+	// PublicKey is not returned by list-sshkeys; keep the value already in state.
 	state.Fingerprint = types.StringValue(key.Fingerprint)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
