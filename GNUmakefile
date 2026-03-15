@@ -1,7 +1,7 @@
 HOSTNAME=registry.terraform.io
 NAMESPACE=weirdbricks
 NAME=atlanticnet
-VERSION=0.1.0
+VERSION=0.1.4
 OS=$(shell go env GOOS)
 ARCH=$(shell go env GOARCH)
 INSTALL_DIR=~/.terraform.d/plugins/$(HOSTNAME)/$(NAMESPACE)/$(NAME)/$(VERSION)/$(OS)_$(ARCH)

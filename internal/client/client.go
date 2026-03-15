@@ -446,7 +446,7 @@ func (c *Client) ListSSHKeys() ([]SSHKey, error) {
 			keys = append(keys, SSHKey{
 				ID:          str(item, "key_id"),
 				Name:        str(item, "key_name"),
-				PublicKey:   str(item, "key"),
+				PublicKey:   str(item, "public_key"),
 				Fingerprint: str(item, "key_fingerprint"),
 			})
 		} else if items, ok := v.([]interface{}); ok {
@@ -456,7 +456,7 @@ func (c *Client) ListSSHKeys() ([]SSHKey, error) {
 					keys = append(keys, SSHKey{
 						ID:          str(item, "key_id"),
 						Name:        str(item, "key_name"),
-						PublicKey:   str(item, "key"),
+						PublicKey:   str(item, "public_key"),
 						Fingerprint: str(item, "key_fingerprint"),
 					})
 				}

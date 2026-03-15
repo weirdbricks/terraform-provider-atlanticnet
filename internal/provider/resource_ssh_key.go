@@ -14,6 +14,32 @@ import (
 	"github.com/weirdbricks/terraform-provider-atlanticnet/internal/client"
 )
 
+// trimmedRequiresReplaceModifier triggers RequiresReplace only when the
+// trimmed plan value differs from the trimmed state value. This handles
+// trailing newlines on public keys (e.g. tls_private_key.public_key_openssh
+// appends \n, but the API stores/returns keys without trailing whitespace).
+type trimmedRequiresReplaceModifier struct{}
+
+func (m trimmedRequiresReplaceModifier) Description(_ context.Context) string {
+	return "Requires replacement when the trimmed value changes."
+}
+
+func (m trimmedRequiresReplaceModifier) MarkdownDescription(_ context.Context) string {
+	return "Requires replacement when the trimmed value changes."
+}
+
+func (m trimmedRequiresReplaceModifier) PlanModifyString(_ context.Context, req planmodifier.StringRequest, resp *planmodifier.StringResponse) {
+	if req.StateValue.IsNull() || req.StateValue.IsUnknown() {
+		return
+	}
+	if req.PlanValue.IsNull() || req.PlanValue.IsUnknown() {
+		return
+	}
+	if strings.TrimSpace(req.StateValue.ValueString()) != strings.TrimSpace(req.PlanValue.ValueString()) {
+		resp.RequiresReplace = true
+	}
+}
+
 var _ resource.Resource = &SSHKeyResource{}
 
 func NewSSHKeyResource() resource.Resource { return &SSHKeyResource{} }
@@ -48,7 +74,7 @@ func (r *SSHKeyResource) Schema(_ context.Context, _ resource.SchemaRequest, res
 			"public_key": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The public key material (e.g. contents of `~/.ssh/id_rsa.pub`).",
-				PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+				PlanModifiers:       []planmodifier.String{trimmedRequiresReplaceModifier{}},
 			},
 			"fingerprint": schema.StringAttribute{
 				Computed:            true,
@@ -109,7 +135,11 @@ func (r *SSHKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	state.Name = types.StringValue(key.Name)
-	// PublicKey is not returned by list-sshkeys; keep the value already in state.
+	// If the API key matches (ignoring whitespace), keep the existing state value
+	// so that trailing-newline differences don't produce a perpetual diff.
+	if strings.TrimSpace(key.PublicKey) != strings.TrimSpace(state.PublicKey.ValueString()) {
+		state.PublicKey = types.StringValue(strings.TrimSpace(key.PublicKey))
+	}
 	state.Fingerprint = types.StringValue(key.Fingerprint)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
